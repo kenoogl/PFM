@@ -48,6 +48,7 @@ function PhaseFieldSim.visualize(sim::Simulation)
     
     # 実行状態の管理
     is_running = Observable(false)
+    is_recording = Observable(false)
     
     # ボタンの配置用グリッド
     controls = fig[2, :] = GridLayout(tellwidth = false)
@@ -55,15 +56,21 @@ function PhaseFieldSim.visualize(sim::Simulation)
     btn_run = Button(controls[1, 1], label = lift(x -> x ? "Stop" : "Start", is_running))
     btn_step = Button(controls[1, 2], label = "Step")
     btn_reset = Button(controls[1, 3], label = "Reset")
+
+    Label(controls[1, 4], "File:")
+    txt_filename = Textbox(controls[1, 5], placeholder = "simulation.mp4", width = 150)
+    btn_record = Button(controls[1, 6], label = lift(x -> x ? "Recording..." : "Record", is_recording))
     
     # Start/Stop ボタンのロジック
     on(btn_run.clicks) do _
-        is_running[] = !is_running[]
+        if !is_recording[]
+            is_running[] = !is_running[]
+        end
     end
     
     # Step ボタンのロジック
     on(btn_step.clicks) do _
-        if !is_running[]
+        if !is_running[] && !is_recording[]
             PhaseFieldSim.step!(sim)
             obs_c2[] = Array(sim.c2)
             obs_c3[] = Array(sim.c3)
@@ -74,12 +81,58 @@ function PhaseFieldSim.visualize(sim::Simulation)
     
     # Reset ボタンのロジック
     on(btn_reset.clicks) do _
+        if !is_recording[]
+            is_running[] = false
+            PhaseFieldSim.initialize_noise!(sim)
+            obs_c2[] = Array(sim.c2)
+            obs_c3[] = Array(sim.c3)
+            obs_step[] = 0
+            obs_time[] = 0.0
+        end
+    end
+
+    # Record ボタンのロジック (Requirement 4.1, 4.2)
+    on(btn_record.clicks) do _
+        if is_recording[]
+            return
+        end
+
+        # ファイル名の決定
+        fname = txt_filename.stored_string[]
+        if isempty(fname)
+            fname = "simulation.mp4"
+        end
+
+        # output ディレクトリをデフォルトとする
+        if !contains(fname, "/") && !contains(fname, "\\")
+            fname = joinpath("output", fname)
+        end
+
+        # ディレクトリの作成
+        mkpath(dirname(fname))
+
+        is_recording[] = true
+        was_running = is_running[]
         is_running[] = false
-        PhaseFieldSim.initialize_noise!(sim)
-        obs_c2[] = Array(sim.c2)
-        obs_c3[] = Array(sim.c3)
-        obs_step[] = 0
-        obs_time[] = 0.0
+
+        # 録画の実行 (200ステップ)
+        # record はブロッキング関数なので、UIスレッドで実行される
+        try
+            @info "Recording to $fname ..."
+            record(fig, fname, 1:200) do i
+                PhaseFieldSim.step!(sim)
+                obs_c2[] = Array(sim.c2)
+                obs_c3[] = Array(sim.c3)
+                obs_step[] += 1
+                obs_time[] += sim.dt
+            end
+            @info "Recording finished."
+        catch e
+            @error "Recording failed: $e"
+        finally
+            is_recording[] = false
+            is_running[] = was_running
+        end
     end
     
     # --- パラメータ調整インターフェース (Requirement 3.1, 3.2) ---
