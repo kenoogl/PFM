@@ -82,6 +82,36 @@ function PhaseFieldSim.visualize(sim::Simulation)
         obs_time[] = 0.0
     end
     
+    # --- パラメータ調整インターフェース (Requirement 3.1, 3.2) ---
+    
+    params_layout = fig[3, :] = GridLayout(tellwidth = false)
+    
+    # スライダーグリッドの作成
+    sg = SliderGrid(
+        params_layout[1, 1],
+        (label = "Ω", range = 10000:100:50000, format = "{:.0f}", startvalue = 25000),
+        (label = "cmob22", range = -1.0:0.01:1.0, format = "{:.2f}", startvalue = sim.cmob22),
+        (label = "cmob33", range = -1.0:0.01:1.0, format = "{:.2f}", startvalue = sim.cmob33),
+        (label = "cmob23", range = -1.0:0.01:1.0, format = "{:.2f}", startvalue = sim.cmob23),
+        (label = "cmob32", range = -1.0:0.01:1.0, format = "{:.2f}", startvalue = sim.cmob32),
+        width = 600,
+        tellheight = true
+    )
+    
+    # スライダーの値をシミュレーションのパラメータに反映
+    on(sg.sliders[1].value) do val
+        # Ω [J/mol] を無次元の相互作用パラメータに変換
+        val_norm = val / (PhaseFieldSim.R_GAS * PhaseFieldSim.TEMP)
+        sim.om12 = val_norm
+        sim.om23 = val_norm
+        sim.om13 = val_norm
+    end
+    
+    on(sg.sliders[2].value) do val; sim.cmob22 = val; end
+    on(sg.sliders[3].value) do val; sim.cmob33 = val; end
+    on(sg.sliders[4].value) do val; sim.cmob23 = val; end
+    on(sg.sliders[5].value) do val; sim.cmob32 = val; end
+    
     # シミュレーションループ
     # @async を使用して GUI スレッドをブロックせずに実行
     @async while isopen(fig.scene)

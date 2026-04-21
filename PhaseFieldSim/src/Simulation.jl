@@ -14,7 +14,7 @@
 - `dt`: 時間刻み
 - `c2a, c3a`: 平均濃度（初期値）
 """
-struct Simulation{T, A}
+mutable struct Simulation{T, A}
     nx::Int
     ny::Int
     c2::A
