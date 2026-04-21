@@ -1,59 +1,70 @@
-# フェーズフィールド法 (PFM) プロジェクトガイドライン
+# Agentic SDLC and Spec-Driven Development
 
-このプロジェクトは、フェーズフィールド法を用いた三相分解シミュレーションを目的としています。
+Kiro-style Spec-Driven Development on an agentic SDLC
 
-## 核心的規範
-- **優先順位**: このファイル (`GEMINI.md`) および `pfm1/AGENTS.md` の記述は、一般的なワークフローよりも優先されます。
-- **レガシー互換性**: `wingxa` のヘッドレス（画面表示なし）互換実装を維持してください。
-- **検証の徹底**: 変更を加えた際は、必ずビルドを行い、シミュレーションおよび可視化ツールを実行して動作を確認してください。
+## Project Memory
+Project memory keeps persistent guidance (steering, specs notes, component docs) so Gemini CLI honors your standards each run. Treat it as the long-lived source of truth for patterns, conventions, and decisions.
 
-## 技術スタック
-- **言語**: C++17
-- **コンパイラ**: `clang++` (推奨) または `g++`
-- **ビルドシステム**: `pfm1/` ディレクトリ内の `Makefile`
-- **出力**: シミュレーションデータとしての `.dat` ファイル、および可視化用の `.bmp` ファイル
+- Use `.kiro/steering/` for project-wide policies: architecture principles, naming schemes, security constraints, tech stack decisions, api standards, etc.
+- Use local `GEMINI.md` files for feature or library context (e.g. `src/lib/payments/GEMINI.md`): describe domain assumptions, API contracts, or testing conventions specific to that folder. Gemini CLI auto-loads these when working in the matching path.
+- Specs notes stay with each spec (under `.kiro/specs/`) to guide specification-level workflows.
 
-## ディレクトリ構成
-- `pfm1/`: 主要なソースコードとシミュレーション関連ファイル
-  - `three_phase_decomp.cpp`: シミュレーションのメインロジック
-  - `bplot.cpp`: `.dat` を `.bmp` に変換するユーティリティ
-  - `plot.cpp`: 可視化ローダー
-  - `wingxa.h/cpp`: グラフィック出力用の互換レイヤー
-  - `bmp1/`, `bmp2/`: 参照用の出力画像サンプル
+## Project Context
 
-## 開発ワークフロー
+### Paths
+- Steering: `.kiro/steering/`
+- Specs: `.kiro/specs/`
 
-### ビルド手順
-ビルドは常に `pfm1/` ディレクトリで `make` を実行してください。
-```bash
-cd pfm1
-make        # 全ターゲットのビルド (three_phase_decomp, plot, bplot)
-make clean  # 実行ファイルおよび一時出力ファイルの削除
-```
+### Steering vs Specification
 
-### 実行と検証
-1. **シミュレーションの実行**:
-   ```bash
-   ./three_phase_decomp
-   ```
-   これによりシミュレーションデータ（デフォルトは `test.dat` など）が生成されます。
+**Steering** (`.kiro/steering/`) - Guide AI with project-wide rules and context
+**Specs** (`.kiro/specs/`) - Formalize development process for individual features
 
-2. **検証用 BMP の生成**:
-   ```bash
-   ./bplot
-   ```
-   `c_field_<step>.bmp` ファイルが生成され、物理的な挙動が正しいことを確認します。
+### Active Specifications
+- Check `.kiro/specs/` for active specifications
+- Use `/kiro-spec-status [feature-name]` to check progress
 
-## コーディング規約
-- **命名規則**:
-  - グローバル変数（例: `c2h`, `c3h`, `time1`）は、明示的なリファクタリングの指示がない限り維持してください。
-  - マクロ（例: `ND`, `INX`, `INY`）はすべて大文字で記述してください。
-- **スタイル**: `.cpp` ファイル内の既存のインデントやコメント形式に従ってください。
-- **効率性**: 大規模な設計変更よりも、読みやすく局所的な修正を優先してください。
+## Development Guidelines
+- Think in English, generate responses in Japanese. All Markdown content written to project files (e.g., requirements.md, design.md, tasks.md, research.md, validation reports) MUST be written in the target language configured for this specification (see spec.json.language).
 
-## テスト方針
-- 自動テストスイートはありません。
-- **必須確認事項**:
-  1. プロジェクトが警告なくビルドできること。
-  2. `bplot` が正常に BMP ファイルを生成できること。
-  3. 出力画像が `bmp1/` や `bmp2/` にある参照画像と論理的な整合性が取れていること。
+## Minimal Workflow
+- Phase 0 (optional): `/kiro-steering`, `/kiro-steering-custom`
+- Discovery: `/kiro-discovery "idea"` — determines action path, writes brief.md + roadmap.md for multi-spec projects
+- Phase 1 (Specification):
+  - Single spec: `/kiro-spec-quick {feature} [--auto]` or step by step:
+    - `/kiro-spec-init "description"`
+    - `/kiro-spec-requirements {feature}`
+    - `/kiro-validate-gap {feature}` (optional: for existing codebase)
+    - `/kiro-spec-design {feature} [-y]`
+    - `/kiro-validate-design {feature}` (optional: design review)
+    - `/kiro-spec-tasks {feature} [-y]`
+  - Multi-spec: `/kiro-spec-batch` — creates all specs from roadmap.md in parallel by dependency wave
+- Phase 2 (Implementation): `/kiro-impl {feature} [tasks]`
+  - Without task numbers: autonomous mode (subagent per task + independent review + final validation)
+  - With task numbers: manual mode (selected tasks in main context, still reviewer-gated before completion)
+  - `/kiro-validate-impl {feature}` (standalone re-validation)
+- Progress check: `/kiro-spec-status {feature}` (use anytime)
+
+## Skills Structure
+Skills are located in `.gemini/skills/kiro-*/SKILL.md`
+- Each skill is a directory with a `SKILL.md` file
+- Use `/skills` to inspect currently available skills
+- Invoke a skill directly with `/kiro-<skill-name>`
+- **If there is even a 1% chance a skill applies to the current task, invoke it.** Do not skip skills because the task seems simple.
+- `kiro-review` — task-local adversarial review protocol used by reviewer subagents
+- `kiro-debug` — root-cause-first debug protocol used by debugger subagents
+- `kiro-verify-completion` — fresh-evidence gate before success or completion claims
+
+## Multi-Agent
+Gemini CLI supports agent-as-tool for sub-agent dispatch. Skills with "Parallel Research" sections list independent work items that benefit from sub-agent spawning.
+
+## Development Rules
+- 3-phase approval workflow: Requirements → Design → Tasks → Implementation
+- Human review required each phase; use `-y` only for intentional fast-track
+- Keep steering current and verify alignment with `/kiro-spec-status`
+- Follow the user's instructions precisely, and within that scope act autonomously: gather the necessary context and complete the requested work end-to-end in this run, asking questions only when essential information is missing or the instructions are critically ambiguous.
+
+## Steering Configuration
+- Load entire `.kiro/steering/` as project memory
+- Default files: `product.md`, `tech.md`, `structure.md`
+- Custom files are supported (managed via `/kiro-steering-custom`)
