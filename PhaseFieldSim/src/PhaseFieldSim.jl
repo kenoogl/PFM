@@ -15,9 +15,10 @@ const R_GAS = 8.3145   # Gas constant [J/(mol*K)]
 
 include("Kernels.jl")
 include("Simulation.jl")
+include("IO.jl")
 
 export OMEGA, TEMP, R_GAS
-export Simulation, step!
+export Simulation, step!, save_snapshot
 
 function greet()
     println("PhaseFieldSim initialized.")

@@ -46,7 +46,7 @@
 
 ## Core: Data IO
 
-- [ ] 4. Data IO: Snapshot Storage
+- [x] 4. Data IO: Snapshot Storage
   - Implement asynchronous file saving logic using the `cfield_[STEP].dat` sequential naming scheme.
   - Ensure the output format maintains compatibility with pfm1's paired numerical data structure.
   - Implement robustness checks to handle file system errors gracefully.
