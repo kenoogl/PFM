@@ -12,7 +12,7 @@
 ## Core: Computational Kernels
 
 - [ ] 2. Core: Computational Kernels
-- [ ] 2.1 (P) Diffusion Equation Kernels
+- [x] 2.1 (P) Diffusion Equation Kernels
   - Define `ParallelStencil` kernels for Cahn-Hilliard diffusion and chemical potential calculation.
   - Implement periodic boundary index mapping within the `@parallel_indices` macros.
   - Ensure kernels are designed for future portability between CPU and GPU backends.
