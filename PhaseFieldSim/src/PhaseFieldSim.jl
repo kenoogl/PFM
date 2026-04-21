@@ -25,13 +25,13 @@ function greet()
 end
 
 """
-    visualize(sim::Simulation)
+    visualize(args...; kwargs...)
 
 シミュレーションの結果を可視化します。
 この機能を利用するには、`GLMakie` パッケージをロードしてください（例: `using GLMakie`）。
-`GLMakie` がロードされていない場合、エラーをスローします。
+`GLMakie` がロードされていない場合、このエラーメッセージが表示されます。
 """
-function visualize(sim::Simulation)
+function visualize(args...; kwargs...)
     throw(ArgumentError("GLMakie is not loaded. Please load GLMakie (e.g., `using GLMakie`) to use visualization features."))
 end
 
