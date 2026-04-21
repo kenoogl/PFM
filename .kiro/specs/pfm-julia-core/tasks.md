@@ -19,7 +19,7 @@
   - Kernels for chemical potential and concentration updates are defined and compile within `src/Kernels.jl`.
   - _Requirements: 2.3, 3.1, 3.3_
   - _Boundary: Kernels_
-- [ ] 2.2 (P) Numerical Utility Kernels
+- [x] 2.2 (P) Numerical Utility Kernels
   - Define kernels for concentration clamping between `1e-6` and `1 - 1e-6`.
   - Implement reduction kernels for mass conservation summation across the grid.
   - Clamping and summation kernels are verified to work correctly on `ParallelStencil` arrays.
