@@ -1043,11 +1043,10 @@ uuid = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
 version = "2.8.3"
 
 [[deps.PhaseFieldSim]]
-deps = ["ParallelStencil", "Printf", "StaticArrays", "Statistics"]
+deps = ["GLMakie", "Makie", "ParallelStencil", "Printf", "StaticArrays", "Statistics"]
 path = "."
 uuid = "c6223e06-05b9-4e56-ac2a-d9a5a5fc799c"
 version = "0.1.0"
-weakdeps = ["GLMakie", "Makie"]
 
     [deps.PhaseFieldSim.extensions]
     PhaseFieldSimMakieExt = ["GLMakie", "Makie"]
