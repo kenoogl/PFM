@@ -61,17 +61,24 @@ function Simulation(nx::Int=100, ny::Int=100; c2a=0.3, c3a=0.3)
     # PhaseFieldSimモジュールで定義された OMEGA, R_GAS, TEMP を使用
     om = OMEGA / (R_GAS * TEMP)
     
-    # pfm1のデフォルト値
+    # pfm1のデフォルト値に合わせる
     om12 = om
     om23 = om
     om13 = om
-    kappa2 = 1.0
-    kappa3 = 1.0
+    
+    # C++ pfm1 のパラメータに合わせる
+    # kapa = 5.0e-15 / b1 / b1 / rtemp ≈ 0.668 (nd=100の場合)
+    # ここでは100x100想定の近似値を使用、または直接計算式を参考に設定
+    kappa2 = 0.668
+    kappa3 = 0.668
+    
     cmob22 = 1.0
     cmob33 = 1.0
-    cmob23 = 0.0
-    cmob32 = 0.0
-    dt = 0.1
+    cmob23 = -0.5
+    cmob32 = -0.5
+    
+    # C++デフォルトは 0.005
+    dt = 0.005
     
     T = Data.Number
     A = Data.Array
@@ -121,6 +128,57 @@ function initialize_noise!(sim::Simulation)
     
     # カーネルによるクランプ処理
     @parallel clamp_concentrations_kernel!(sim.c2, sim.c3)
+    
+    return
+end
+
+"""
+    step!(sim::Simulation)
+
+シミュレーションを1ステップ進めます。
+1. 化学ポテンシャルの計算
+2. 濃度場の更新
+3. 質量保存の補正
+4. 濃度のクランプ処理
+5. 次ステップのための濃度場のコピー
+"""
+function step!(sim::Simulation)
+    # 1. 化学ポテンシャルの計算 (Requirement 2.4, 3.1)
+    @parallel compute_mu_kernel!(
+        sim.mu2, sim.mu3, sim.c2, sim.c3,
+        sim.om12, sim.om23, sim.om13, sim.kappa2, sim.kappa3
+    )
+    
+    # 2. 濃度場の更新 (Requirement 2.4, 3.1)
+    @parallel update_c_kernel!(
+        sim.c2_new, sim.c3_new, sim.c2, sim.c3,
+        sim.mu2, sim.mu3, sim.cmob22, sim.cmob33, sim.cmob23, sim.cmob32,
+        sim.dt
+    )
+    
+    # 3. 質量保存の補正 (Requirement 1.2, 2.4)
+    # Julia's sum handles multi-threading if the arrays are large or if using ParallelStencil's reductions.
+    # ParallelStencil does not currently override sum automatically unless using @parallel sum,
+    # but for standard CPU arrays (Threads backend), sum(Array) is fast.
+    # Note: sum(sim.c2_new) works on ParallelStencil arrays.
+    
+    sum_c2 = sum(sim.c2_new)
+    sum_c3 = sum(sim.c3_new)
+    nx, ny = sim.nx, sim.ny
+    
+    dc2a = sum_c2 / (nx * ny) - sim.c2a
+    dc3a = sum_c3 / (nx * ny) - sim.c3a
+    
+    @parallel apply_correction_kernel!(sim.c2_new, dc2a)
+    @parallel apply_correction_kernel!(sim.c3_new, dc3a)
+    
+    # 4. 濃度のクランプ処理 (Requirement 2.5)
+    @parallel clamp_concentrations_kernel!(sim.c2_new, sim.c3_new)
+    
+    # 5. 次ステップのための濃度場のコピー
+    # copy!(dest, src) は ParallelStencil 配列に対しても動作します。
+    copy!(sim.c2, sim.c2_new)
+    copy!(sim.c3, sim.c3_new)
     
     return
 end

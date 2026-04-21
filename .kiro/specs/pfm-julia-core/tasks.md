@@ -35,7 +35,7 @@
   - `Simulation(nx, ny)` creates a valid state with mass-conserved noise, defaulting to 100x100.
   - _Requirements: 1.2, 2.1, 2.2_
   - _Boundary: Simulation_
-- [ ] 3.2 Simulation Control Flow
+- [x] 3.2 Simulation Control Flow
   - Implement the high-level `step!` function to coordinate the sequence of kernel calls.
   - Integrate the mass conservation correction logic into the simulation loop.
   - Configure the simulation to utilize Julia's multi-threading for grid updates.

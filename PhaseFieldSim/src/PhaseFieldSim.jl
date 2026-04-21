@@ -17,7 +17,7 @@ include("Kernels.jl")
 include("Simulation.jl")
 
 export OMEGA, TEMP, R_GAS
-export Simulation
+export Simulation, step!
 
 function greet()
     println("PhaseFieldSim initialized.")
