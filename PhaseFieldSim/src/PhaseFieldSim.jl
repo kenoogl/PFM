@@ -14,17 +14,10 @@ const TEMP  = 900.0    # Temperature [K]
 const R_GAS = 8.3145   # Gas constant [J/(mol*K)]
 
 include("Kernels.jl")
+include("Simulation.jl")
 
 export OMEGA, TEMP, R_GAS
-
-"""
-    Simulation
-
-Placeholder for the simulation state. To be implemented in Task 2.
-"""
-struct Simulation
-    # Placeholder
-end
+export Simulation
 
 function greet()
     println("PhaseFieldSim initialized.")

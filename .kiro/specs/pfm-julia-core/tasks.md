@@ -29,7 +29,7 @@
 ## Core: Simulation Engine
 
 - [ ] 3. Core: Simulation Engine
-- [ ] 3.1 Simulation State Management
+- [x] 3.1 Simulation State Management
   - Implement the `Simulation` struct to hold grid data, buffers, and physical constants.
   - Implement initialization logic using random noise (±0.01) with support for arbitrary grid dimensions (nx, ny).
   - `Simulation(nx, ny)` creates a valid state with mass-conserved noise, defaulting to 100x100.
