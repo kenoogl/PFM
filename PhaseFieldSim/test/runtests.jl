@@ -129,4 +129,37 @@ using ParallelStencil
         # Cleanup
         rm(output_dir, recursive=true)
     end
+
+    @testset "Dynamic Parameters (Task 2.3)" begin
+        sim = Simulation(10, 10)
+        
+        # Test om12 update
+        new_om = 123.45
+        sim.om12 = new_om
+        @test sim.om12 == new_om
+        
+        # Test mobility update
+        new_mob = 0.88
+        sim.cmob22 = new_mob
+        @test sim.cmob22 == new_mob
+        
+        # Ensure step! works with new parameters
+        @test (step!(sim); true)
+    end
+
+    @testset "Visualization API (Req 5.2)" begin
+        sim = Simulation(10, 10)
+        # Calling visualize without GLMakie should throw ArgumentError
+        @test_throws ArgumentError visualize(sim)
+        
+        # Verify the error message contains GLMakie
+        try
+            visualize(sim)
+        catch e
+            @test e isa ArgumentError
+            @test occursin("GLMakie", e.msg)
+        end
+    end
+
+    include("test_viz.jl")
 end
