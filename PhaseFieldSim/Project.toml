@@ -1,0 +1,15 @@
+name = "PhaseFieldSim"
+uuid = "c6223e06-05b9-4e56-ac2a-d9a5a5fc799c"
+version = "0.1.0"
+authors = ["Gemini CLI Agent"]
+
+[deps]
+ParallelStencil = "94395366-693c-11ea-3b26-d9b7aac5d958"
+Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
+StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
