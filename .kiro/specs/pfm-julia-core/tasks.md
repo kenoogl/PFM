@@ -56,7 +56,7 @@
 
 ## Validation: Test Suite
 
-- [ ] 5. Validation: Test Suite
+- [x] 5. Validation: Test Suite
   - Implement unit tests for noise initialization, grid scaling, and concentration clamping.
   - Implement integration tests to verify mass conservation stability over long simulation runs.
   - Implement format verification to ensure generated .dat files match pfm1's sample data.
